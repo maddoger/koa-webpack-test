@@ -2,11 +2,11 @@ import getPageHtml from './getPageHtml'
 
 // returns client scripts
 const getScripts = (ctx) => {
-  const { assets } = ctx
+  const { assets } = ctx.state
 
   // add all scripts
   const scripts = [
-    assets.client[0]
+    assets.client.js
   ]
 
   return scripts.map((src) => `<script src="${src}"></script>`).join('')
@@ -23,9 +23,7 @@ const getHeader = async (ctx) => {
 const getBody = async (ctx) => {
   return `
     <body>
-      <div id="root">
-        ${await getPageHtml(ctx)}
-      </div>
+      <div id="root">${await getPageHtml(ctx)}</div>
       ${await getScripts(ctx)}
     </body>
   `

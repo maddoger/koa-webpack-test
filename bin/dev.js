@@ -1,7 +1,8 @@
 const Koa = require('koa')
-const { webpackServer } = require('./kws')
-const webpack = require('webpack');
+const webpack = require('webpack')
 
+const { webpackServer } = require('./kws')
+const assetsMiddleware = require('./assetsMiddleware')
 const config = require('../webpack.config')
 
 const port = process.env.PORT || 3000
@@ -9,27 +10,27 @@ const app = new Koa()
 
 webpackServer(app, {
   compilers: webpack(config),
-  dev: {
-    noInfo: false,
-    quiet: true,
+  dev: Object.assign({
+    noInfo: true,
+    stats: 'minimal',
     serverSideRender: true,
     publicPath: '/',
-  },
+  }, config.devServer || {}),
   hotClient: {
     allEntries: true
   },
-}).then(({ middlewares }) => {
-  // hot-middlewares: you may try making any changes from middlewares,
-  // it will automatically rebuild and reload,
-  // so that you don't have to reboot your server to see the changes.
+}).then(({ assetsGetter, server }) => {
+  const { middlewares } = server
+  console.log(server)
 
-  const { assets, renderPage } = middlewares
-  
-  app.use(assets)
-  app.use(renderPage)
+  app.use(assetsMiddleware(assetsGetter))
+
+  for (let middleware of middlewares) {
+    app.use(middleware)    
+  }
 
   app.listen(port, () => {
-    console.log(`server started at port %s`, port)
+    console.log(`server started in dev at port %s`, port)
   })
 }).catch((err) => {
   console.log(err)

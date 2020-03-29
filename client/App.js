@@ -10,7 +10,7 @@ const App = () => {
 
   return (
     <div>
-      <h1>Hello from App 2</h1>
+      <h1>Hello from App</h1>
       <h3>Language: {language}</h3>
       <Switch>
         <Route path="/" exact>

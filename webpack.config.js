@@ -1,11 +1,11 @@
 const { resolve } = require('path')
 const webpack = require('webpack')
 const merge = require('webpack-merge')
+const AssetsPlugin = require('assets-webpack-plugin')
 
 const srcPath = __dirname
-const distPath = resolve(__dirname, 'dist')
+const distPath = __dirname
 
-console.log(srcPath)
 
 const mode = process.env.NODE_ENV || 'development'
 const isDev = mode === 'development'
@@ -47,7 +47,7 @@ const base = {
   },
   output: {
     filename: isDev ? '[name].js' : '[name].[contenthash:8].js',
-    path: distPath,
+    path: resolve(distPath, 'site-build'),
     publicPath: '/'
   },
   plugins: [
@@ -56,6 +56,11 @@ const base = {
       BABEL_ENV: mode,
       API: process.env.API || '',
       VERSION: process.env.VERSION || 'dev',
+    }),
+    new AssetsPlugin({
+      filename: 'assets.json',
+      useCompilerPath: true,
+      keepInMemory: true,
     }),
   ],
 }

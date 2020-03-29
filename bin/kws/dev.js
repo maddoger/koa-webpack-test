@@ -1,4 +1,4 @@
-const devMiddleware = require('webpack-dev-middleware');
+const devMiddleware = require('webpack-dev-middleware')
 
 module.exports = (compiler, opts) => {
   const expressMiddleware = devMiddleware(compiler, opts)
@@ -12,8 +12,8 @@ module.exports = (compiler, opts) => {
         ctx.set(name, value)
       },
       locals: ctx.state,
-    }, next);
-  };
+    }, next)
+  }
 
   middleware.getFilenameFromUrl = expressMiddleware.getFilenameFromUrl
   middleware.waitUntilValid = expressMiddleware.waitUntilValid
