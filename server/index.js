@@ -1,6 +1,6 @@
 import renderPage from './middleware/renderPage'
 
 
-export const middlewares = [
+export const middleware = [
   renderPage,
 ]

@@ -6,13 +6,13 @@ const assetsMiddleware = require('./assetsMiddleware')
 const port = process.env.PORT || 3000
 const app = new Koa()
 
-const { middlewares } = require('../site-build/server')
+const { middleware } = require('../site-build/server')
 const assetsJson = require('../site-build/assets.json')
   
 app.use(koaStatic(path.resolve(__dirname, '..', 'site-build')))
 app.use(assetsMiddleware(assetsJson))
 
-for (let middleware of middlewares) {
+for (let middleware of middleware) {
   app.use(middleware)    
 }
 

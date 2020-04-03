@@ -1,18 +1,15 @@
-'use strict'
-
 const path = require('path')
 const requireFromString = require('require-from-string')
-const devMiddleware = require('./dev')
+const devMiddleware = require('./devMiddleware')
+const assetsMiddleware = require('./assetsMiddleware')
 
-let init = false
-let assetsCache = null
-let cache
 
 const findCompiler = (compilers, name) => {
   let result = null
   if (compilers && Array.isArray(compilers.compilers)) {
-    result = compilers.compilers.find(compiler => compiler.name === name)
-  } else if (compilers && compilers.name === name) {
+    result = compilers.compilers.find((compiler) => compiler.name === name)
+  }
+  else if (compilers && compilers.name === name) {
     result = compilers
   }
 
@@ -34,7 +31,6 @@ const findStats = (stats, name) => {
   }
   return result
 }
-
 /**
  * register webpack 'done' event listener
  * @param {*} compilers server and client webpack compilers
@@ -42,12 +38,13 @@ const findStats = (stats, name) => {
  */
 const listen = (compilers, serverName) => {
   return new Promise((resolve, reject) => {
-    compilers.hooks.done.tap('koa-webpack-server' , () => {
+    compilers.hooks.done.tap('koa-webpack-server', () => {
       const serverCompiler = findCompiler(compilers, serverName)
       try {
         const result = handleChanges(serverCompiler)
         resolve(result)
-      } catch (err) {
+      }
+      catch (err) {
         reject(err)
       }
     })
@@ -57,8 +54,22 @@ const listen = (compilers, serverName) => {
   })
 }
 
-const assetsGetter = () => {
-  return assetsCache
+let init = false
+let cache
+let assetsCache = {}
+
+// assets getter creator, it returns json from assets by filename
+const getAssetsGetter = (compiler) => (filename) => {
+  if (!assetsCache[filename]) {
+    const outputFileSystem = compiler.outputFileSystem
+    const outputPath = compiler.outputPath
+    const assetsFilename = path.join(outputPath, filename)
+
+    const assetsBuffer = outputFileSystem.readFileSync(assetsFilename)
+    assetsCache[filename] = JSON.parse(assetsBuffer.toString())
+  }
+
+  return assetsCache[filename]
 }
 
 /**
@@ -66,31 +77,30 @@ const assetsGetter = () => {
  * @param {*} compiler
  */
 const handleChanges = (compiler) => {
-  console.error('HANDLE CHANGE')
-
   const server = {}
 
   const outputFileSystem = compiler.outputFileSystem
   const outputPath = compiler.outputPath
   const mainFilename = path.join(outputPath, compiler.options.output.filename || 'main.js')
-  const assetsFilename = path.join(outputPath, 'assets.json')
 
   const buffer = outputFileSystem.readFileSync(mainFilename)
   cache = requireFromString(buffer.toString())
 
-  const assetsBuffer = outputFileSystem.readFileSync(assetsFilename)
-  assetsCache = JSON.parse(assetsBuffer.toString())
+  // clear assets cache
+  assetsCache = {}
 
   if (!init) {
+    // return server to create a dev server only once
     Object.keys(cache).forEach((key) => {
-      if (key === 'middlewares') {
-        // wrap all middlewares for code reloading
+      if (key === 'middleware') {
+        // wrap all middleware for code reloading
         server[key] = cache[key].map((middleware, index) => {
           return async function () {
+            // eslint-disable-next-line prefer-rest-params
             await cache[key][index](...arguments)
           }
         })
-      } 
+      }
       else {
         server[key] = cache[key]
       }
@@ -99,12 +109,10 @@ const handleChanges = (compiler) => {
     init = true
   }
 
-  return { server, assetsGetter }
+  return { server, assetsGetter: getAssetsGetter(compiler) }
 }
 
-exports.findCompiler = findCompiler
-
-exports.findStats = findStats
+exports.assetsMiddleware = assetsMiddleware
 
 exports.webpackServer = (app, options) => {
   const { compilers, serverName, dev, server } = options

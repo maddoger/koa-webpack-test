@@ -1,8 +1,7 @@
 const Koa = require('koa')
 const webpack = require('webpack')
 
-const { webpackServer } = require('./kws')
-const assetsMiddleware = require('./assetsMiddleware')
+const { webpackServer, assetsMiddleware } = require('./kws')
 const config = require('../webpack.config')
 
 const port = process.env.PORT || 3000
@@ -20,13 +19,12 @@ webpackServer(app, {
     allEntries: true
   },
 }).then(({ assetsGetter, server }) => {
-  const { middlewares } = server
-  console.log(server)
+  const { middleware } = server
 
   app.use(assetsMiddleware(assetsGetter))
 
-  for (let middleware of middlewares) {
-    app.use(middleware)    
+  for (let m of middleware) {
+    app.use(m)    
   }
 
   app.listen(port, () => {
