@@ -59,7 +59,7 @@ let cache
 let assetsCache = {}
 
 // assets getter creator, it returns json from assets by filename
-const getAssetsGetter = (compiler) => (filename) => {
+const getAssetsGetter = (compiler) => (filename) => () => {
   if (!assetsCache[filename]) {
     const outputFileSystem = compiler.outputFileSystem
     const outputPath = compiler.outputPath
