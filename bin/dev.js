@@ -21,7 +21,7 @@ webpackServer(app, {
 }).then(({ assetsGetter, server }) => {
   const { middleware } = server
 
-  app.use(assetsMiddleware(assetsGetter('assets.json')))
+  app.use(assetsMiddleware(assetsGetter('assets.json'), 'assets'))
 
   for (let m of middleware) {
     app.use(m)    

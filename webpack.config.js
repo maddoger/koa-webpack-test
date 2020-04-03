@@ -2,6 +2,8 @@ const { resolve } = require('path')
 const webpack = require('webpack')
 const merge = require('webpack-merge')
 const AssetsPlugin = require('assets-webpack-plugin')
+const nodeExternals = require('webpack-node-externals')
+
 
 const srcPath = __dirname
 const distPath = __dirname
@@ -82,6 +84,9 @@ const server = merge(base, {
   entry: {
     server: resolve(srcPath, 'server', 'index.js'),
   },
+  externals: [
+    nodeExternals(),
+  ],
 })
 
 module.exports = [

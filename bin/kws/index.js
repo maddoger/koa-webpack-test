@@ -19,18 +19,6 @@ const findCompiler = (compilers, name) => {
   return result
 }
 
-const findStats = (stats, name) => {
-  let result = null
-  if (stats && Array.isArray(stats.stats)) {
-    result = stats.stats.find(node => node.compilation.name === name)
-  } else if (stats && stats.compilation.name === name) {
-    result = stats
-  }
-  if (!result) {
-    throw new Error(`No webpack stats found named '${name}', please check your configuration.`)
-  }
-  return result
-}
 /**
  * register webpack 'done' event listener
  * @param {*} compilers server and client webpack compilers
